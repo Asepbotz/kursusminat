@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
+     * Menampilkan tampilan login.
      */
     public function create(): View
     {
@@ -20,7 +20,7 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Menangani permintaan autentikasi masuk.
      */
     public function store(LoginRequest $request): RedirectResponse
     {
@@ -28,21 +28,27 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Mengambil subdomain dari host permintaan
         $subdomain = explode('.', $request->getHost())[0];
-        return redirect()->to("http://{$subdomain}.kursusku.test:8000/");
+
+        // Mengalihkan pengguna ke halaman kursus yang sesuai dengan subdomain
+        // Misalnya: math.kursusku.test/kursus
+        return redirect()->route('kursus.index', ['subdomain' => $subdomain]);
     }
 
     /**
-     * Destroy an authenticated session.
+     * Menghancurkan sesi terautentikasi.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        Auth::guard('web')->logout(); // Melakukan logout
 
-        $request->session()->invalidate();
+        $request->session()->invalidate(); // Membatalkan sesi
 
-        $request->session()->regenerateToken();
+        $request->session()->regenerateToken(); // Meregenerasi token sesi
 
-        return redirect('/');
+        // Mengalihkan pengguna kembali ke halaman login
+        return redirect()->route('login');
     }
 }
+
