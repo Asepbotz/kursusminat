@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\KursusController;
+use App\Http\Controllers\ChatController; // Impor ChatController
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth; // Import Auth facade
+use Illuminate\Support\Facades\Auth;
 
 // Grup rute untuk subdomain (misal: math.kursusku.test)
+// Rute di dalam grup ini akan secara otomatis memiliki {subdomain} dari URL
 Route::domain('{subdomain}.kursusku.test')->group(function () {
-    // Rute utama untuk subdomain. Mengalihkan berdasarkan status login dan peran.
+    // Rute utama untuk subdomain
     Route::get('/', function ($subdomain) {
         if (Auth::check()) {
             // Jika pengguna login, alihkan ke halaman daftar kursus spesifik subdomain
@@ -23,7 +25,12 @@ Route::domain('{subdomain}.kursusku.test')->group(function () {
         // Dapat diakses oleh user dan admin.
         Route::get('/kursus', [KursusController::class, 'index'])->name('kursus.index');
 
+        // Rute API untuk mengambil data kursus terbaru berdasarkan subdomain (TETAP DI SINI)
+        // Ini perlu parameter subdomain karena data kursus memang spesifik per subdomain
+        Route::get('/api/kursus/{subdomain}', [ChatController::class, 'fetchKursus'])->name('api.kursus.fetch');
+
         // Rute-rute khusus admin untuk pengelolaan kursus (CRUD)
+        // Dilindungi oleh middleware 'admin'
         Route::middleware('admin')->group(function () {
             // Tampilkan form untuk membuat kursus baru
             Route::get('/kursus/create', [KursusController::class, 'create'])->name('kursus.create');
@@ -39,6 +46,16 @@ Route::domain('{subdomain}.kursusku.test')->group(function () {
     });
 });
 
+// === Rute API Global untuk Chat (DIPINDAHKAN KE LUAR GRUP SUBDOMAIN) ===
+// Rute-rute ini tidak akan memerlukan parameter subdomain secara otomatis
+// karena mereka tidak berada dalam grup domain.
+Route::middleware('auth')->group(function () {
+    Route::get('/api/chat/messages', [ChatController::class, 'fetchMessages'])->name('api.chat.messages');
+    Route::post('/api/chat/messages', [ChatController::class, 'sendMessage'])->name('api.chat.send');
+});
+// ======================================================================
+
+
 // Rute Dashboard generik (setelah login)
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -53,4 +70,3 @@ Route::middleware('auth')->group(function () {
 
 // Memuat rute autentikasi Laravel Breeze
 require __DIR__.'/auth.php';
-
