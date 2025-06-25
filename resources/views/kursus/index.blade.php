@@ -187,25 +187,6 @@
             @endforelse
         </tbody>
     </table>
-
-    {{-- Live Chatroom --}}
-    <div class="chat-container">
-        <div class="chat-header">Live Chatroom</div>
-        <div class="chat-messages" id="chatMessages">
-            {{-- Pesan chat akan dimuat di sini oleh JavaScript --}}
-            <p style="text-align: center; color: #888;">Memuat pesan...</p>
-        </div>
-        @auth {{-- Hanya tampilkan input chat jika user sudah login --}}
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Ketik pesan Anda..." @if(!Auth::check()) disabled @endif>
-            <button id="sendMessageBtn" @if(!Auth::check()) disabled @endif>Kirim</button>
-        </div>
-        @else
-        <div class="chat-input" style="justify-content: center; color: #888;">
-            Anda harus login untuk mengirim pesan chat.
-        </div>
-        @endauth
-    </div>
 </div>
 
 <script>
@@ -404,12 +385,10 @@
     // --- Mulai polling ---
     // Polling setiap 3 detik untuk chat dan kursus
     setInterval(fetchKursusData, 3000);
-    setInterval(fetchChatMessages, 3000);
 
     // Panggil sekali saat halaman dimuat untuk data awal
     document.addEventListener('DOMContentLoaded', () => {
         fetchKursusData();
-        fetchChatMessages();
     });
 </script>
 </body>
